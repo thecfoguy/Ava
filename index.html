@@ -7,6 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="./manifest.json">
   <title>GloriA</title>
 
   <style>
@@ -120,6 +121,7 @@
       display: grid;
       place-items: center;
       box-shadow: var(--shadow);
+      cursor: pointer;
     }
 
     .photo-card img {
@@ -295,6 +297,7 @@
         calc(16px + env(safe-area-inset-top))
         16px
         calc(18px + env(safe-area-inset-bottom));
+      touch-action: pan-y;
     }
 
     .viewer.open {
@@ -350,6 +353,7 @@
       background: rgba(255, 255, 255, 0.14);
       color: #ffffff;
       font-size: 24px;
+      line-height: 1;
     }
 
     .loading {
@@ -427,934 +431,364 @@
     }
   </style>
 </head>
-
 <body>
   <main class="app">
-
     <header class="topbar">
       <h1 class="brand">Glori<span class="final-a">A</span></h1>
     </header>
 
     <section id="uploadScreen" class="screen active">
-
       <div class="hero-copy">
         <h2>See yourself in a new look.</h2>
-        <p>
-          Upload a clear photo of your face and GloriA will show you
-          nine hairstyle ideas.
-        </p>
+        <p>Upload a clear photo of your face and GloriA will show you nine hairstyle ideas.</p>
       </div>
 
-      <div id="photoCard" class="photo-card">
-
-        <img
-          id="previewImage"
-          alt="Your uploaded photo"
-        >
-
+      <div id="photoCard" class="photo-card" role="button" tabindex="0" aria-label="Choose a photo">
+        <img id="previewImage" alt="Your uploaded photo">
         <div class="empty-state">
-
-          <div class="camera-circle">
-            📷
-          </div>
-
-          <strong>
-            Add your photo
-          </strong>
-
-          <span>
-            Use a front-facing photo with good lighting.
-          </span>
-
+          <div class="camera-circle">📷</div>
+          <strong>Add your photo</strong>
+          <span>Use a front-facing photo with good lighting.</span>
         </div>
-
       </div>
 
-      <input
-        id="photoInput"
-        type="file"
-        accept="image/*"
-        hidden
-      >
+      <input id="photoInput" type="file" accept="image/*" hidden>
 
       <div class="actions">
-
-        <button
-          id="choosePhotoBtn"
-          class="btn btn-secondary"
-          type="button"
-        >
-          CHOOSE PHOTO
-        </button>
-
-        <button
-          id="tryLooksBtn"
-          class="btn btn-primary"
-          type="button"
-          disabled
-        >
-          TRY 9 LOOKS
-        </button>
-
+        <button id="choosePhotoBtn" class="btn btn-secondary" type="button">CHOOSE PHOTO</button>
+        <button id="tryLooksBtn" class="btn btn-primary" type="button" disabled>TRY 9 LOOKS</button>
       </div>
 
-      <div
-        id="uploadError"
-        class="error"
-      >
-        Please choose a valid image first.
-      </div>
-
-      <p class="tiny-note">
-        GloriA keeps the face the same and changes only the hairstyle.
-      </p>
-
+      <div id="uploadError" class="error">Please choose a valid image first.</div>
+      <p class="tiny-note">GloriA keeps the face the same and changes only the hairstyle.</p>
     </section>
 
-    <section
-      id="resultsScreen"
-      class="screen"
-    >
-
+    <section id="resultsScreen" class="screen">
       <div class="results-head">
-
         <div>
-
-          <h2>
-            Your 9 looks
-          </h2>
-
-          <p>
-            Tap any style to see it larger.
-          </p>
-
+          <h2>Your 9 looks</h2>
+          <p>Tap any style to see it larger.</p>
         </div>
-
-        <button
-          id="backBtn"
-          class="small-btn"
-          type="button"
-        >
-          Back
-        </button>
-
+        <button id="backBtn" class="small-btn" type="button">Back</button>
       </div>
 
-      <div
-        id="looksGrid"
-        class="grid"
-      ></div>
+      <div id="looksGrid" class="grid"></div>
 
       <div class="results-actions">
-
-        <button
-          id="nineMoreBtn"
-          class="btn btn-primary"
-          type="button"
-        >
-          TRY 9 MORE
-        </button>
-
-        <button
-          id="newPhotoBtn"
-          class="btn btn-secondary"
-          type="button"
-        >
-          USE A NEW PHOTO
-        </button>
-
+        <button id="nineMoreBtn" class="btn btn-primary" type="button">TRY 9 MORE</button>
+        <button id="newPhotoBtn" class="btn btn-secondary" type="button">USE A NEW PHOTO</button>
       </div>
-
     </section>
-
   </main>
 
-  <div
-    id="viewer"
-    class="viewer"
-    aria-hidden="true"
-  >
-
-    <button
-      id="viewerClose"
-      class="viewer-close"
-      type="button"
-      aria-label="Close"
-    >
-      ×
-    </button>
+  <div id="viewer" class="viewer" aria-hidden="true">
+    <button id="viewerClose" class="viewer-close" type="button" aria-label="Close">×</button>
 
     <div class="viewer-image-wrap">
-
-      <img
-        id="viewerImage"
-        alt="Selected hairstyle preview"
-      >
-
+      <img id="viewerImage" alt="Selected hairstyle preview">
     </div>
 
-    <div
-      id="viewerTitle"
-      class="viewer-title"
-    ></div>
+    <div id="viewerTitle" class="viewer-title"></div>
 
     <div class="viewer-controls">
-
-      <button
-        id="prevLook"
-        class="viewer-btn"
-        type="button"
-      >
-        ‹ Prev
-      </button>
-
-      <button
-        id="saveLook"
-        class="viewer-btn"
-        type="button"
-      >
-        Save
-      </button>
-
-      <button
-        id="nextLook"
-        class="viewer-btn"
-        type="button"
-      >
-        Next ›
-      </button>
-
+      <button id="prevLook" class="viewer-btn" type="button">‹ Prev</button>
+      <button id="saveLook" class="viewer-btn" type="button">Save</button>
+      <button id="nextLook" class="viewer-btn" type="button">Next ›</button>
     </div>
-
   </div>
 
-  <div
-    id="loading"
-    class="loading"
-  >
-
+  <div id="loading" class="loading">
     <div class="loader-box">
-
       <div class="spinner"></div>
-
-      <h3>
-        Creating your looks...
-      </h3>
-
-      <p>
-        GloriA is preparing nine hairstyle ideas while keeping
-        your face unchanged.
-      </p>
-
+      <h3>Creating your looks...</h3>
+      <p>GloriA is preparing nine hairstyle ideas while keeping your face unchanged.</p>
     </div>
-
   </div>
 
   <script>
-
-    const photoInput =
-      document.getElementById("photoInput");
-
-    const choosePhotoBtn =
-      document.getElementById("choosePhotoBtn");
-
-    const tryLooksBtn =
-      document.getElementById("tryLooksBtn");
-
-    const photoCard =
-      document.getElementById("photoCard");
-
-    const previewImage =
-      document.getElementById("previewImage");
-
-    const uploadError =
-      document.getElementById("uploadError");
-
-    const uploadScreen =
-      document.getElementById("uploadScreen");
-
-    const resultsScreen =
-      document.getElementById("resultsScreen");
-
-    const looksGrid =
-      document.getElementById("looksGrid");
-
-    const backBtn =
-      document.getElementById("backBtn");
-
-    const nineMoreBtn =
-      document.getElementById("nineMoreBtn");
-
-    const newPhotoBtn =
-      document.getElementById("newPhotoBtn");
-
-    const loading =
-      document.getElementById("loading");
-
-    const viewer =
-      document.getElementById("viewer");
-
-    const viewerImage =
-      document.getElementById("viewerImage");
-
-    const viewerTitle =
-      document.getElementById("viewerTitle");
-
-    const viewerClose =
-      document.getElementById("viewerClose");
-
-    const prevLook =
-      document.getElementById("prevLook");
-
-    const nextLook =
-      document.getElementById("nextLook");
-
-    const saveLook =
-      document.getElementById("saveLook");
-
+    const photoInput = document.getElementById("photoInput");
+    const choosePhotoBtn = document.getElementById("choosePhotoBtn");
+    const tryLooksBtn = document.getElementById("tryLooksBtn");
+    const photoCard = document.getElementById("photoCard");
+    const previewImage = document.getElementById("previewImage");
+    const uploadError = document.getElementById("uploadError");
+    const uploadScreen = document.getElementById("uploadScreen");
+    const resultsScreen = document.getElementById("resultsScreen");
+    const looksGrid = document.getElementById("looksGrid");
+    const backBtn = document.getElementById("backBtn");
+    const nineMoreBtn = document.getElementById("nineMoreBtn");
+    const newPhotoBtn = document.getElementById("newPhotoBtn");
+    const loading = document.getElementById("loading");
+    const viewer = document.getElementById("viewer");
+    const viewerImage = document.getElementById("viewerImage");
+    const viewerTitle = document.getElementById("viewerTitle");
+    const viewerClose = document.getElementById("viewerClose");
+    const prevLook = document.getElementById("prevLook");
+    const nextLook = document.getElementById("nextLook");
+    const saveLook = document.getElementById("saveLook");
 
     const hairstyleNames = [
-
       "Soft Bob",
-
       "Long Layers",
-
       "Textured Lob",
-
       "Curtain Bangs",
-
       "Beach Waves",
-
       "Sleek Straight",
-
       "Pixie Cut",
-
       "Voluminous Curls",
-
       "Shoulder-Length Shag"
-
     ];
 
-
     let sourceImageDataUrl = "";
-
     let currentLookIndex = 0;
-
     let generatedLooks = [];
+    let touchStartX = 0;
 
+    choosePhotoBtn.addEventListener("click", () => photoInput.click());
+    photoCard.addEventListener("click", () => photoInput.click());
 
-    choosePhotoBtn.addEventListener(
-      "click",
-      () => {
-
+    photoCard.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
         photoInput.click();
-
       }
-    );
+    });
 
+    photoInput.addEventListener("change", handlePhoto);
 
-    photoCard.addEventListener(
-      "click",
-      () => {
-
-        photoInput.click();
-
+    tryLooksBtn.addEventListener("click", async () => {
+      if (!sourceImageDataUrl) {
+        uploadError.classList.add("show");
+        return;
       }
-    );
 
+      uploadError.classList.remove("show");
+      await buildNineLooks(false);
+    });
 
-    photoInput.addEventListener(
-      "change",
-      handlePhoto
-    );
+    backBtn.addEventListener("click", () => showScreen(uploadScreen));
 
+    newPhotoBtn.addEventListener("click", () => {
+      resetApp();
+      showScreen(uploadScreen);
+      photoInput.click();
+    });
 
-    tryLooksBtn.addEventListener(
-      "click",
-      async () => {
+    nineMoreBtn.addEventListener("click", async () => {
+      await buildNineLooks(true);
+    });
 
-        if (!sourceImageDataUrl) {
+    viewerClose.addEventListener("click", closeViewer);
 
-          uploadError.classList.add("show");
+    prevLook.addEventListener("click", showPreviousLook);
+    nextLook.addEventListener("click", showNextLook);
+    saveLook.addEventListener("click", saveCurrentLook);
 
-          return;
-
-        }
-
-        uploadError.classList.remove("show");
-
-        await buildNineLooks();
-
+    viewer.addEventListener("click", (event) => {
+      if (event.target === viewer) {
+        closeViewer();
       }
-    );
+    });
 
+    viewer.addEventListener("touchstart", (event) => {
+      touchStartX = event.changedTouches[0].clientX;
+    }, { passive: true });
 
-    backBtn.addEventListener(
-      "click",
-      () => {
+    viewer.addEventListener("touchend", (event) => {
+      const touchEndX = event.changedTouches[0].clientX;
+      const difference = touchEndX - touchStartX;
 
-        showScreen(uploadScreen);
-
+      if (Math.abs(difference) < 50) {
+        return;
       }
-    );
 
-
-    newPhotoBtn.addEventListener(
-      "click",
-      () => {
-
-        resetApp();
-
-        showScreen(uploadScreen);
-
-        photoInput.click();
-
+      if (difference < 0) {
+        showNextLook();
+      } else {
+        showPreviousLook();
       }
-    );
-
-
-    nineMoreBtn.addEventListener(
-      "click",
-      async () => {
-
-        await buildNineLooks(true);
-
-      }
-    );
-
-
-    viewerClose.addEventListener(
-      "click",
-      closeViewer
-    );
-
-
-    prevLook.addEventListener(
-      "click",
-      () => {
-
-        if (!generatedLooks.length) {
-          return;
-        }
-
-        currentLookIndex =
-          (
-            currentLookIndex
-            - 1
-            + generatedLooks.length
-          )
-          % generatedLooks.length;
-
-        updateViewer();
-
-      }
-    );
-
-
-    nextLook.addEventListener(
-      "click",
-      () => {
-
-        if (!generatedLooks.length) {
-          return;
-        }
-
-        currentLookIndex =
-          (
-            currentLookIndex
-            + 1
-          )
-          % generatedLooks.length;
-
-        updateViewer();
-
-      }
-    );
-
-
-    saveLook.addEventListener(
-      "click",
-      saveCurrentLook
-    );
-
-
-    viewer.addEventListener(
-      "click",
-      (event) => {
-
-        if (event.target === viewer) {
-
-          closeViewer();
-
-        }
-
-      }
-    );
-
+    }, { passive: true });
 
     function handlePhoto(event) {
+      const file = event.target.files?.[0];
 
-      const file =
-        event.target.files?.[0];
-
-      if (
-        !file
-        ||
-        !file.type.startsWith("image/")
-      ) {
-
+      if (!file || !file.type.startsWith("image/")) {
+        uploadError.textContent = "Please choose a valid image first.";
         uploadError.classList.add("show");
-
         return;
-
       }
 
+      const reader = new FileReader();
 
-      const reader =
-        new FileReader();
+      reader.onload = () => {
+        sourceImageDataUrl = reader.result;
+        previewImage.src = sourceImageDataUrl;
+        photoCard.classList.add("has-image");
+        tryLooksBtn.disabled = false;
+        uploadError.classList.remove("show");
+      };
 
-
-      reader.onload =
-        () => {
-
-          sourceImageDataUrl =
-            reader.result;
-
-          previewImage.src =
-            sourceImageDataUrl;
-
-          photoCard.classList.add(
-            "has-image"
-          );
-
-          tryLooksBtn.disabled =
-            false;
-
-          uploadError.classList.remove(
-            "show"
-          );
-
-        };
-
-
-      reader.onerror =
-        () => {
-
-          uploadError.textContent =
-            "That image could not be opened.";
-
-          uploadError.classList.add(
-            "show"
-          );
-
-        };
-
+      reader.onerror = () => {
+        uploadError.textContent = "That image could not be opened.";
+        uploadError.classList.add("show");
+      };
 
       reader.readAsDataURL(file);
-
     }
 
-
-    async function buildNineLooks(
-      isRefresh = false
-    ) {
-
-      loading.classList.add(
-        "show"
-      );
-
+    async function buildNineLooks(isRefresh) {
+      loading.classList.add("show");
 
       await delay(850);
 
-
       /*
-        FIRST GLORIA PROTOTYPE
-
-        Right now the uploaded photograph is
-        duplicated into the nine hairstyle cards.
-
-        The actual AI hairstyle-generation
-        service will be connected here next.
-
-        The future generator should:
-
-        1. Preserve the woman's identity.
-        2. Preserve her face.
-        3. Preserve her skin tone.
-        4. Preserve her expression.
-        5. Preserve her apparent age.
-        6. Preserve the lighting.
-        7. Preserve the background.
-        8. Change only her hair.
-        9. Produce one distinct hairstyle
-           for each result.
+        GloriA prototype:
+        This first version duplicates the uploaded photo into nine cards.
+        The real AI hairstyle generator will replace these mock images later.
       */
 
+      const orderedNames = isRefresh
+        ? shuffle([...hairstyleNames])
+        : [...hairstyleNames];
 
-      const orderedNames =
-        isRefresh
-          ? shuffle(
-              [...hairstyleNames]
-            )
-          : [...hairstyleNames];
-
-
-      generatedLooks =
-        orderedNames.map(
-          (name, index) => {
-
-            return {
-
-              id:
-                `${Date.now()}-${index}`,
-
-              name:
-                name,
-
-              image:
-                sourceImageDataUrl
-
-            };
-
-          }
-        );
-
+      generatedLooks = orderedNames.map((name, index) => ({
+        id: `${Date.now()}-${index}`,
+        name,
+        image: sourceImageDataUrl
+      }));
 
       renderLooks();
-
-
-      loading.classList.remove(
-        "show"
-      );
-
-
-      showScreen(
-        resultsScreen
-      );
-
-
-      window.scrollTo({
-
-        top: 0,
-
-        behavior: "instant"
-
-      });
-
+      loading.classList.remove("show");
+      showScreen(resultsScreen);
+      window.scrollTo({ top: 0, behavior: "auto" });
     }
-
 
     function renderLooks() {
+      looksGrid.innerHTML = "";
 
-      looksGrid.innerHTML =
-        "";
+      generatedLooks.forEach((look, index) => {
+        const button = document.createElement("button");
+        button.className = "look-card";
+        button.type = "button";
+        button.setAttribute("aria-label", `View ${look.name}`);
 
+        const image = document.createElement("img");
+        image.src = look.image;
+        image.alt = look.name;
 
-      generatedLooks.forEach(
-        (look, index) => {
+        const label = document.createElement("div");
+        label.className = "look-label";
+        label.textContent = look.name;
 
-          const button =
-            document.createElement(
-              "button"
-            );
-
-
-          button.className =
-            "look-card";
-
-
-          button.type =
-            "button";
-
-
-          button.setAttribute(
-            "aria-label",
-            `View ${look.name}`
-          );
-
-
-          const image =
-            document.createElement(
-              "img"
-            );
-
-
-          image.src =
-            look.image;
-
-
-          image.alt =
-            look.name;
-
-
-          const label =
-            document.createElement(
-              "div"
-            );
-
-
-          label.className =
-            "look-label";
-
-
-          label.textContent =
-            look.name;
-
-
-          button.appendChild(
-            image
-          );
-
-
-          button.appendChild(
-            label
-          );
-
-
-          button.addEventListener(
-            "click",
-            () => {
-
-              openViewer(index);
-
-            }
-          );
-
-
-          looksGrid.appendChild(
-            button
-          );
-
-        }
-      );
-
+        button.appendChild(image);
+        button.appendChild(label);
+        button.addEventListener("click", () => openViewer(index));
+        looksGrid.appendChild(button);
+      });
     }
-
 
     function openViewer(index) {
-
-      currentLookIndex =
-        index;
-
-
+      currentLookIndex = index;
       updateViewer();
-
-
-      viewer.classList.add(
-        "open"
-      );
-
-
-      viewer.setAttribute(
-        "aria-hidden",
-        "false"
-      );
-
-
-      document.body.style.overflow =
-        "hidden";
-
+      viewer.classList.add("open");
+      viewer.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
     }
-
 
     function closeViewer() {
-
-      viewer.classList.remove(
-        "open"
-      );
-
-
-      viewer.setAttribute(
-        "aria-hidden",
-        "true"
-      );
-
-
-      document.body.style.overflow =
-        "";
-
+      viewer.classList.remove("open");
+      viewer.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
     }
 
+    function showPreviousLook() {
+      if (!generatedLooks.length) return;
+
+      currentLookIndex =
+        (currentLookIndex - 1 + generatedLooks.length) %
+        generatedLooks.length;
+
+      updateViewer();
+    }
+
+    function showNextLook() {
+      if (!generatedLooks.length) return;
+
+      currentLookIndex =
+        (currentLookIndex + 1) %
+        generatedLooks.length;
+
+      updateViewer();
+    }
 
     function updateViewer() {
+      const look = generatedLooks[currentLookIndex];
 
-      const look =
-        generatedLooks[
-          currentLookIndex
-        ];
+      if (!look) return;
 
-
-      if (!look) {
-        return;
-      }
-
-
-      viewerImage.src =
-        look.image;
-
-
-      viewerTitle.textContent =
-        look.name;
-
+      viewerImage.src = look.image;
+      viewerTitle.textContent = look.name;
     }
-
 
     function saveCurrentLook() {
+      const look = generatedLooks[currentLookIndex];
 
-      const look =
-        generatedLooks[
-          currentLookIndex
-        ];
+      if (!look) return;
 
+      const link = document.createElement("a");
 
-      if (!look) {
-        return;
-      }
-
-
-      const link =
-        document.createElement(
-          "a"
-        );
-
-
-      link.href =
-        look.image;
-
+      link.href = look.image;
 
       link.download =
-        `GloriA-${
-          look.name
-            .toLowerCase()
-            .replace(/\s+/g, "-")
-        }.jpg`;
+        `GloriA-${look.name.toLowerCase().replace(/\s+/g, "-")}.jpg`;
 
-
-      document.body.appendChild(
-        link
-      );
-
-
+      document.body.appendChild(link);
       link.click();
-
-
       link.remove();
-
     }
 
+    function showScreen(screenToShow) {
+      [uploadScreen, resultsScreen].forEach((screen) => {
+        screen.classList.remove("active");
+      });
 
-    function showScreen(
-      screenToShow
-    ) {
-
-      [
-        uploadScreen,
-        resultsScreen
-      ].forEach(
-        (screen) => {
-
-          screen.classList.remove(
-            "active"
-          );
-
-        }
-      );
-
-
-      screenToShow.classList.add(
-        "active"
-      );
-
+      screenToShow.classList.add("active");
     }
-
 
     function resetApp() {
-
-      photoInput.value =
-        "";
-
-
-      sourceImageDataUrl =
-        "";
-
-
-      generatedLooks =
-        [];
-
-
-      looksGrid.innerHTML =
-        "";
-
-
-      previewImage.removeAttribute(
-        "src"
-      );
-
-
-      photoCard.classList.remove(
-        "has-image"
-      );
-
-
-      tryLooksBtn.disabled =
-        true;
-
-
-      uploadError.classList.remove(
-        "show"
-      );
-
-
+      photoInput.value = "";
+      sourceImageDataUrl = "";
+      generatedLooks = [];
+      looksGrid.innerHTML = "";
+      previewImage.removeAttribute("src");
+      photoCard.classList.remove("has-image");
+      tryLooksBtn.disabled = true;
+      uploadError.classList.remove("show");
       closeViewer();
-
     }
-
 
     function shuffle(items) {
+      for (let i = items.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
 
-      for (
-        let i = items.length - 1;
-        i > 0;
-        i -= 1
-      ) {
-
-        const j =
-          Math.floor(
-            Math.random()
-            * (i + 1)
-          );
-
-
-        [
-          items[i],
-          items[j]
-        ] =
-        [
-          items[j],
-          items[i]
-        ];
-
+        [items[i], items[j]] =
+        [items[j], items[i]];
       }
 
-
       return items;
-
     }
-
 
     function delay(ms) {
-
-      return new Promise(
-        (resolve) =>
-          setTimeout(
-            resolve,
-            ms
-          )
-      );
-
+      return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch((error) => {
+          console.error("Service worker registration failed:", error);
+        });
+      });
+    }
   </script>
-
 </body>
 </html>
