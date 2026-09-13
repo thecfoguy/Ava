@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="manifest" href="./manifest.json">
-  <title>GloriA</title>
+  <title>AVA</title>
 
   <style>
     :root {
@@ -76,10 +76,6 @@
       font-weight: 800;
       letter-spacing: -2px;
       line-height: 1;
-    }
-
-    .brand .final-a {
-      font-style: italic;
     }
 
     .screen {
@@ -434,13 +430,13 @@
 <body>
   <main class="app">
     <header class="topbar">
-      <h1 class="brand">Glori<span class="final-a">A</span></h1>
+      <h1 class="brand">AVA</h1>
     </header>
 
     <section id="uploadScreen" class="screen active">
       <div class="hero-copy">
-        <h2>See yourself in a new look.</h2>
-        <p>Upload a clear photo of your face and GloriA will show you nine hairstyle ideas.</p>
+        <h2>See yourself differently.</h2>
+        <p>Upload a clear photo of your face and AVA will show you nine hairstyle ideas.</p>
       </div>
 
       <div id="photoCard" class="photo-card" role="button" tabindex="0" aria-label="Choose a photo">
@@ -460,7 +456,7 @@
       </div>
 
       <div id="uploadError" class="error">Please choose a valid image first.</div>
-      <p class="tiny-note">GloriA keeps the face the same and changes only the hairstyle.</p>
+      <p class="tiny-note">AVA keeps the face the same and changes only the hairstyle.</p>
     </section>
 
     <section id="resultsScreen" class="screen">
@@ -501,7 +497,7 @@
     <div class="loader-box">
       <div class="spinner"></div>
       <h3>Creating your looks...</h3>
-      <p>GloriA is preparing nine hairstyle ideas while keeping your face unchanged.</p>
+      <p>AVA is preparing nine hairstyle ideas while keeping your face unchanged.</p>
     </div>
   </div>
 
@@ -642,7 +638,7 @@
       await delay(850);
 
       /*
-        GloriA prototype:
+        AVA prototype:
         This first version duplicates the uploaded photo into nine cards.
         The real AI hairstyle generator will replace these mock images later.
       */
@@ -740,7 +736,7 @@
       link.href = look.image;
 
       link.download =
-        `GloriA-${look.name.toLowerCase().replace(/\s+/g, "-")}.jpg`;
+        `AVA-${look.name.toLowerCase().replace(/\s+/g, "-")}.jpg`;
 
       document.body.appendChild(link);
       link.click();
